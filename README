@@ -16,17 +16,11 @@ SYNOPSIS
 DESCRIPTION
     Authenticate into a nis+ domain.
 
-    This is pretty lame in that it simply executes
-    "/usr/bin/nismatch" with the appropriate arguments. If exposed
-    to an unruly user base, that part should be rewritten to gather
-    output from an underprivileged child instead of letting the
-    shell get involved. An even better answer would probably be to
-    hook into Net::NISPlus, but I could not figure out how to do
-    that in the few hours I had available.
-
 AUTHOR
-    valerie at savina dot com (Valerie Delane), based more or less
-    on code shamelessly lifted from Doug MacEachern's
+    Requires the Net::NISPlus module.
+
+    valerie at savina dot com (Valerie Delane), originally based
+    more or less on code shamelessly lifted from Doug MacEachern's
     Apache::AuthNIS.
 
 COPYRIGHT

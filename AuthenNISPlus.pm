@@ -3,8 +3,9 @@ package Apache::AuthenNISPlus;
 use strict;
 use Apache::Constants qw/:common/;
 use vars qw/%ENV/;
+use Net::NISPlus::Table;
 
-$Apache::AuthenNISPlus::VERSION = '0.03';
+$Apache::AuthenNISPlus::VERSION = '0.04';
 my $self="Apache::AuthenNISPlus";
 
 sub handler {
@@ -40,28 +41,27 @@ sub handler {
   # get passwd table name
   my $passwd_table = $dir_config->get("NISPlus_Passwd_Table");
 
-  # taint allowance
-  $ENV{PATH}="/bin";
-
-  # if this module is to be exposed to an unruly user base, it would
-  # be safer to gather the nismatch output via an underprivileged child
-  # instead of letting the shell get involved
-
-  # construct nismatch command
-  my $command = "/usr/bin/nismatch $name $passwd_table";
-
   # get passwd entry
-  my $out = `$command`;
-  if($?){
+
+  # get user password entry
+  my $pwd_table = Net::NISPlus::Table->new($passwd_table);
+  my $pwd = "";
+  my $group = "";
+  foreach ($pwd_table->list()){
+    if(@{$_}[0] eq $name){
+      $pwd = @{$_}[1];
+      $group = @{$_}[3];
+      last;
+    }
+  }
+
+  unless($pwd){
     $r->note_basic_auth_failure;
     $r->log_reason(
       "$self: user $name is not in $passwd_table", $r->uri
     );
     return AUTH_REQUIRED;
   }
-
-  # get password, group from password entry
-  my($pwd, $group) = (split ":", $out)[1,3];
 
   #stash group id lookup for authorization check 
   $r->notes($name."Group", $group);
@@ -90,9 +90,6 @@ sub authz {
   my $dir_config = $r->dir_config;   
   my $group_table=$dir_config->get("NISPlus_Group_Table");
 
-  # construct nismatch command
-  my $command = "/usr/bin/nismatch $name $group_table";
-
   for my $req (@$requires) {
     my($require, @rest) = split /\s+/, $req->{requirement};
 
@@ -104,11 +101,12 @@ sub authz {
 
     # ok if user is member of a required group.
     elsif($require eq "group") {
+      my $group_table = Net::NISPlus::Table->new($group_table);
+      my %groups_to_gids;
+      foreach ($group_table->list()){$groups_to_gids{@{$_}[0]} = @{$_}[2]}
       for my $group (@rest) {
-        my $out = `$command`;
-        next if $?;
-        my($gname, $gid) = (split ":", $out)[0,2];
-        return OK if $r->notes($name."Group") == $gid;
+        next unless exists $groups_to_gids{$group};
+        return OK if $r->notes($name."Group") == $groups_to_gids{$group};
       }
     }
   }
@@ -146,17 +144,13 @@ Apache::AuthenNISPlus - Authenticate into a NIS+ domain
 
 Authenticate into a nis+ domain.
 
-This is pretty lame in that it simply executes "/usr/bin/nismatch"
-with the appropriate arguments.  If exposed to an unruly user base,
-that part should be rewritten to gather output from an
-underprivileged child instead of letting the shell get involved.  An
-even better answer would probably be to hook into Net::NISPlus, but I
-could not figure out how to do that in the few hours I had available.
-
 =head1 AUTHOR
 
-valerie at savina dot com (Valerie Delane), based more or less on
-code shamelessly lifted from Doug MacEachern's Apache::AuthNIS.
+Requires the Net::NISPlus module.
+
+valerie at savina dot com (Valerie Delane), originally based more or
+less on code shamelessly lifted from Doug MacEachern's
+Apache::AuthNIS.
 
 =head1 COPYRIGHT
 
