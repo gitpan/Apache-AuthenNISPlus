@@ -1,0 +1,38 @@
+NAME
+    Apache::AuthenNISPlus - Authenticate into a NIS+ domain
+
+SYNOPSIS
+     #httpd.conf
+     <Location>
+       AuthName "your nis+ account"
+       AuthType Basic
+       PerlSetVar NISPlus_Passwd_Table passwd.org_dir.yoyodyne.com
+       PerlSetVar NISPlus_Group_Table group.org_dir.yoyodyne.com
+       PerlAuthenHandler Apache::AuthenNISPlus
+       require group eng
+       require user john larry
+     </Location>
+
+DESCRIPTION
+    Authenticate into a nis+ domain.
+
+    This is pretty lame in that it simply executes
+    "/usr/bin/nismatch" with the appropriate arguments. If exposed
+    to an unruly user base, that part should be rewritten to gather
+    output from an underprivileged child instead of letting the
+    shell get involved. An even better answer would probably be to
+    hook into Net::NISPlus, but I could not figure out how to do
+    that in the few hours I had available.
+
+AUTHOR
+    valerie at savina dot com (Valerie Delane), based more or less
+    on code shamelessly lifted from Doug MacEachern's
+    Apache::AuthNIS.
+
+COPYRIGHT
+    This library is free software; you can redistribute it and/or
+    modify it under the same terms as Perl itself.
+
+SEE ALSO
+    mod_perl(3), Apache(3), nismatch(1)
+

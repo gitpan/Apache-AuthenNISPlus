@@ -1,0 +1,11 @@
+Revision history for Perl extension Apache::AuthenNISPlus.
+
+0.03 1998 dec 16 16:30
+	- bug fixes, slightly better documentation, and actual packaging
+
+0.02 1998 sep 23 19:00
+	- bug fixes
+
+0.01  
+	- original version
+

@@ -1,0 +1,1 @@
+- use Net::NISPlus instead of calling /usr/bin/nismatch via the shell
