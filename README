@@ -16,9 +16,9 @@ SYNOPSIS
 DESCRIPTION
     Authenticate into a nis+ domain.
 
-AUTHOR
     Requires the Net::NISPlus module.
 
+AUTHOR
     valerie at savina dot com (Valerie Delane), originally based
     more or less on code shamelessly lifted from Doug MacEachern's
     Apache::AuthNIS.

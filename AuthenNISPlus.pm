@@ -45,6 +45,11 @@ sub handler {
 
   # get user password entry
   my $pwd_table = Net::NISPlus::Table->new($passwd_table);
+  unless ($pwd_table){
+    $r->note_basic_auth_failure;
+    $r->log_reason("$self: cannot get nis+ passwd table", $r->uri);
+    return AUTH_REQUIRED;
+  }
   my $pwd = "";
   my $group = "";
   foreach ($pwd_table->list()){
@@ -102,6 +107,11 @@ sub authz {
     # ok if user is member of a required group.
     elsif($require eq "group") {
       my $group_table = Net::NISPlus::Table->new($group_table);
+      unless ($group_table){
+        $r->note_basic_auth_failure;
+        $r->log_reason("$self: cannot get nis+ group table", $r->uri);
+        return AUTH_REQUIRED;
+      }
       my %groups_to_gids;
       foreach ($group_table->list()){$groups_to_gids{@{$_}[0]} = @{$_}[2]}
       for my $group (@rest) {
@@ -144,9 +154,9 @@ Apache::AuthenNISPlus - Authenticate into a NIS+ domain
 
 Authenticate into a nis+ domain.
 
-=head1 AUTHOR
-
 Requires the Net::NISPlus module.
+
+=head1 AUTHOR
 
 valerie at savina dot com (Valerie Delane), originally based more or
 less on code shamelessly lifted from Doug MacEachern's
